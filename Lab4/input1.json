@@ -1,0 +1,40 @@
+{
+    "author": {
+        "S": "bill clinton"
+    },
+    "year": {
+        "N": "2010"
+    },
+    "keywords": {
+        "SS": [
+            "biography",
+            "history"
+        ]
+    },
+    "prices": {
+        "L": [
+            {
+                "N": "25.2"
+            },
+            {
+                "N": "30"
+            },
+            {
+                "S": "unknown"
+            }
+        ]
+    },
+    "ratings": {
+        "M": {
+            "amazon": {
+                "N": "5"
+            },
+            "b&n": {
+                "N": "4.5"
+            }
+        }
+    },
+    "title": {
+        "S": "my life"
+    }
+}

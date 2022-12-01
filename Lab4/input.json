@@ -1,0 +1,48 @@
+{
+  "bookID": {
+    "S": "1159142"
+  },
+  "Author": {
+    "SS": [
+      "Dave Thomas",
+      "David Heinemeier Hansson",
+      "Sam Ruby"
+    ]
+  },
+  "bookTitle": {
+    "S": "Agile Web Development with Rails"
+  },
+  "convertTo": {
+    "M": {
+      "epub": {
+        "S": "http://bookzz.org/cs2/liveconverter/?source=http%3A%2F%2Fdlx.bookzz.org%2Fgenesis%2F721000%2Fae49d9bb94118632df0691df18706319&input_format=pdf&output_format=EPUB&download=1"
+      },
+      "fb2": {
+        "S": "http://bookzz.org/cs2/liveconverter/?source=http%3A%2F%2Fdlx.bookzz.org%2Fgenesis%2F721000%2Fae49d9bb94118632df0691df18706319&input_format=pdf&output_format=FB2&download=1"
+      },
+      "txt": {
+        "S": "http://bookzz.org/cs2/liveconverter/?source=http%3A%2F%2Fdlx.bookzz.org%2Fgenesis%2F721000%2Fae49d9bb94118632df0691df18706319&input_format=pdf&output_format=TXT&download=1"
+      }
+    }
+  },
+  "dimensions": {
+    "NS": [
+      "6",
+      "1",
+      "9"
+    ]
+  },
+  "ISBN": {
+    "L": [
+      {
+        "N": "14614712"
+      },
+      {
+        "S": "978-1461471370"
+      }
+    ]
+  },
+  "pages": {
+    "N": "472"
+  }
+}

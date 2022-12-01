@@ -1,0 +1,129 @@
+Q1 Script: db.country.find({$and: [{GNP:{$gte : 10000}},{GNP:{$lte:15000}}]},{Name:1,_id:0})
+OUTPUT:
+[
+    { Name: 'Bulgaria' },
+    { Name: 'Belarus' },
+    { Name: 'Brunei' },
+    { Name: 'CÃ´te dÂ’Ivoire' },
+    { Name: 'Costa Rica' },
+    { Name: 'Iraq' },
+    { Name: 'Lithuania' },
+    { Name: 'Sudan' },
+    { Name: 'El Salvador' },
+    { Name: 'Uzbekistan' }
+]
+
+
+
+Q2 Script: db.country.find({Capital : {$exists:true}}).forEach( function(x){db.country.update({ _id : x._id},{$set : {Capital : x.Capital.toString()}});});
+db.country.find({Capital : /0/}).count()
+OUTPUT:
+63
+
+
+Q3 Script: db.country.distinct('Continent').length
+OUTPUT:
+7
+  
+
+Q4 Script: db.country.find({},{Name : 1, GNP : 1, _id : 0}).sort({GNP : -1}).limit(5)
+OUTPUT:
+[
+    { Name: 'United States', GNP: 8510700 },
+    { Name: 'Japan', GNP: 3787042 },
+    { Name: 'Germany', GNP: 2133367 },
+    { Name: 'France', GNP: 1424285 },
+    { Name: 'United Kingdom', GNP: 1378330 }
+]
+
+
+Q5 Script: db.countrylanguage.distinct('Language', {Percentage : {$gte : 95}, IsOfficial : 'T'})
+OUTPUT:
+[
+    'Albaniana',      'Arabic',
+    'Bengali',        'Dhivehi',
+    'Dutch',          'English',
+    'Faroese',        'Greek',
+    'Hungarian',      'Icelandic',
+    'Italian',        'Japanese',
+    'Kiribati',       'Kirundi',
+    'Korean',         'Malagasy',
+    'Maltese',        'Marshallese',
+    'Norwegian',      'Polish',
+    'Portuguese',     'Rwanda',
+    'Serbo-Croatian', 'Somali',
+    'Spanish',        'Tongan'
+]
+
+
+Q6 Script: db.city.find({ Name: /Los/i, Population : {$gte : 200000}},{Name:1,_id:0})
+OUTPUT: 
+[
+    { Name: 'Santiago de los Caballeros' },
+    { Name: 'Santo Domingo de los Colorados' },
+    { Name: 'Ecatepec de Morelos' },
+    { Name: 'San NicolÃ¡s de los Garza' },
+    { Name: 'Los Angeles' }
+]
+
+
+Q7 Script: db.country.aggregate({$group : { _id : '$Continent', average_GNP : {$avg : '$GNP'}}})
+OUTPUT:
+[
+    { _id: 'Europe', average_GNP: 206497.0652173913 },
+    { _id: 'Africa', average_GNP: 10006.465517241379 },
+    { _id: 'Antarctica', average_GNP: 0 },
+    { _id: 'North America', average_GNP: 261854.78918918918 },
+    { _id: 'South America', average_GNP: 107991 },
+    { _id: 'Oceania', average_GNP: 14991.953571428572 },
+    { _id: 'Asia', average_GNP: 150105.72549019608 }
+]
+
+Find top-10 most popular official language, ranked by the number of countries where the
+language is official (i.e., the count). Return language and count.
+db.countrylanguage.aggregate([{$match:{IsOfficial:"T"}},{$group:{_id:"$Language",Count:{$sum:1}}},{$sort:{Count:-1}},{$limit:10}])
+
+Q8 Script: db.countrylanguage.aggregate({$match : {IsOfficial : 'T'}}, {$group : {_id : '$Language', count : {$sum:1}}},{$sort: {count : -1}},{$limit:10})
+OUTPUT:
+[
+  { _id: 'English', count: 44 },
+  { _id: 'Arabic', count: 22 },
+  { _id: 'Spanish', count: 20 },
+  { _id: 'French', count: 18 },
+  { _id: 'Portuguese', count: 6 },
+  { _id: 'German', count: 6 },
+  { _id: 'Dutch', count: 4 },
+  { _id: 'Italian', count: 4 },
+  { _id: 'Malay', count: 4 },
+  { _id: 'Russian', count: 3 }
+]
+
+
+Q9 Script: db.country.aggregate({$match : {Continent : 'North America', GNP : {$gte : 100000}}},{$lookup : {from : 'city', localField : 'Capital', foreignField : 'ID', as : 'res'}},{ $project : { Name : 1, "res.Name" : 1, _id : 0}})
+OUTPUT:
+[
+    { Name: 'Canada', res: [ { Name: 'Ottawa' } ] },
+    { Name: 'Mexico', res: [ { Name: 'Ciudad de MÃ©xico' } ] },
+    { Name: 'United States', res: [ { Name: 'Washington' } ] }
+]
+
+
+Q10 Script: db.countrylanguage.aggregate({$lookup : {from : 'country', localField : 'CountryCode', foreignField : 'Code', as : 'res'}}, {$match : {"res.Continent" : 'North America', Language : "English", IsOfficial : 'T'}}, {$project : {"res.Name":1, _id : 0}})
+OUTPUT:
+[
+    { res: [ { Name: 'Anguilla' } ] },
+    { res: [ { Name: 'Antigua and Barbuda' } ] },
+    { res: [ { Name: 'Belize' } ] },
+    { res: [ { Name: 'Bermuda' } ] },
+    { res: [ { Name: 'Barbados' } ] },
+    { res: [ { Name: 'Canada' } ] },
+    { res: [ { Name: 'Cayman Islands' } ] },
+    { res: [ { Name: 'Saint Kitts and Nevis' } ] },
+    { res: [ { Name: 'Saint Lucia' } ] },
+    { res: [ { Name: 'Montserrat' } ] },
+    { res: [ { Name: 'Turks and Caicos Islands' } ] },
+    { res: [ { Name: 'United States' } ] },
+    { res: [ { Name: 'Saint Vincent and the Grenadines' } ] },
+    { res: [ { Name: 'Virgin Islands, British' } ] },
+    { res: [ { Name: 'Virgin Islands, U.S.' } ] }
+]
