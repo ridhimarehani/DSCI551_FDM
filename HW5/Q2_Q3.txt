@@ -1,0 +1,151 @@
+!pip install pyspark
+from pyspark.sql.session import SparkSession
+import pyspark.sql.functions as fc
+spark = SparkSession.builder.appName('HW5').getOrCreate()
+country_data = spark.read.json("/content/country.json")
+city_data = spark.read.json("/content/city.json")
+countrylanguage_data = spark.read.json("/content/countrylanguage.json")
+
+#2a
+countrylanguage_data.where('IsOfficial = "T"').groupBy('Language').agg(fc.count('*').alias('cnt')).sort("cnt", ascending=False).limit(10).show()
+
++----------+---+
+|  Language|cnt|
++----------+---+
+|   English| 44|
+|    Arabic| 22|
+|   Spanish| 20|
+|    French| 18|
+|Portuguese|  6|
+|    German|  6|
+|     Malay|  4|
+|   Italian|  4|
+|     Dutch|  4|
+|    Danish|  3|
++----------+---+#2b
+country_data.join(city_data,(country_data.Capital == city_data.ID) & (country_data.Continent == "North America") & (country_data.GNP>=100000)).select(country_data.Name.alias('CountryName'), city_data.Name.alias('CityName')).show()
+
++-------------+-----------------+
+|  CountryName|         CityName|
++-------------+-----------------+
+|       Canada|           Ottawa|
+|       Mexico|Ciudad de MÃ©xico|
+|United States|       Washington|
++-------------+-----------------+
+
+
+#2c
+country_data.join(countrylanguage_data,(countrylanguage_data.CountryCode == country_data.Code)&(country_data.Continent == "North America")&(countrylanguage_data.IsOfficial == "T")&(countrylanguage_data.Language == "English")).select(country_data.Name.alias('CountryName')).show(truncate=False)
+
++--------------------------------+
+|CountryName                     |
++--------------------------------+
+|Anguilla                        |
+|Antigua and Barbuda             |
+|Belize                          |
+|Bermuda                         |
+|Barbados                        |
+|Canada                          |
+|Cayman Islands                  |
+|Saint Kitts and Nevis           |
+|Saint Lucia                     |
+|Montserrat                      |
+|Turks and Caicos Islands        |
+|United States                   |
+|Saint Vincent and the Grenadines|
+|Virgin Islands, British         |
+|Virgin Islands, U.S.            |
++--------------------------------+
+
+
+
+#2d
+city_data.where('CountryCode = "USA"').groupBy('Name').max('Population').sort("max(Population)",ascending=False).limit(1).show()
++--------+---------------+
+|    Name|max(Population)|
++--------+---------------+
+|New York|        8008278|
++--------+---------------+
+
+
+#2e
+
+
+res=(countrylanguage_data.filter((countrylanguage_data.Language=="English")&(countrylanguage_data.IsOfficial == "T")).select(countrylanguage_data.CountryCode)).intersect(countrylanguage_data.filter((countrylanguage_data.IsOfficial == "T")&(countrylanguage_data.Language == "French")).select(countrylanguage_data.CountryCode))
+res.show()
+
++-----------+
+|CountryCode|
++-----------+
+|        VUT|
+|        SYC|
+|        CAN|
++-----------+
+
+################################################################
+#3a
+
+def range(x):
+  if x >= 10000 and x <=20000:
+    return ('True',1)
+  else:
+    return('False',1)
+res = country_spark_rdd.map(lambda r: r['GNP']).map(range).reduceByKey(lambda U,x: U+x )
+res.collect()[1][1]
+
+20
+
+#3b
+res = country_spark_rdd.map(lambda x: (x['Continent'], x['GNP'])).reduceByKey(lambda U,x: (max(U,x)))
+res.collect()
+
+[('North America', 8510700.0),
+ ('Asia', 3787042.0),
+ ('Africa', 116729.0),
+ ('Europe', 2133367.0),
+ ('South America', 776739.0),
+ ('Oceania', 351182.0),
+ ('Antarctica', 0.0)]
+
+#3c
+res = (country_spark_rdd.map(lambda r:(r['Capital'],r['Name']))).join(city_spark_rdd.map(lambda r: (r['ID'],r['Name']))).sortBy(lambda p : p[1],ascending=False).map(lambda r: (r[1][0],r[1][1]))
+res.collect()[0:20]
+
+('Zimbabwe', 'Harare'),
+ ('Zambia', 'Lusaka'),
+ ('Yugoslavia', 'Beograd'),
+ ('Yemen', 'Sanaa'),
+ ('Western Sahara', 'El-AaiÃºn'),
+ ('Wallis and Futuna', 'Mata-Utu'),
+ ('Virgin Islands, U.S.', 'Charlotte Amalie'),
+ ('Virgin Islands, British', 'Road Town'),
+ ('Vietnam', 'Hanoi'),
+ ('Venezuela', 'Caracas'),
+ ('Vanuatu', 'Port-Vila'),
+ ('Uzbekistan', 'Toskent'),
+ ('Uruguay', 'Montevideo'),
+ ('United States', 'Washington'),
+ ('United Kingdom', 'London'),
+ ('United Arab Emirates', 'Abu Dhabi'),
+ ('Ukraine', 'Kyiv'),
+ ('Uganda', 'Kampala'),
+ ('Tuvalu', 'Funafuti'),
+ ('Turks and Caicos Islands', 'Cockburn Town')]
+
+
+#3d
+city_spark_rdd.filter(lambda x: x['CountryCode']=='USA').map(lambda x: (x['Population'],x['Name'])).sortByKey(False).map(lambda x: x[0]).collect()[0]
+
+8008278
+
+
+#3e
+countryLanguage_spark_rdd = countrylanguage_data.rdd
+res = countryLanguage_spark_rdd.filter(lambda x:(x['IsOfficial']=='T')&((x['Language']=='English')|(x['Language'] == 'French'))).map(lambda x:(x['CountryCode'], x['Language'])).reduceByKey(lambda a,b: a+b).filter(lambda x: x[1] == 'EnglishFrench').map(lambda x: x[0])
+res.collect()
+
+['CAN', 'SYC', 'VUT']
+
+
+
+
